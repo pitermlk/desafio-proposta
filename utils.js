@@ -1,50 +1,35 @@
 const fs = require('fs');
 
 const validateProposalId = (proposal) => {
-
     proposal = String(proposal);
 
-    console.log("separates the check code");
     const code = proposal.substring(proposal.length - 2);
-    console.log("code", code);
 
-    console.log("separate the other digits");
-    const arrNumbers = proposal.split("", 8);
-    var sumEven = 0;
-    var sumOdd = 0;
+    const arrNumbers = proposal.substring(0, proposal.length - 2).split("");
+    let sumEven = 0;
+    let sumOdd = 0;
 
-    console.log("Add the even and odd values");
     arrNumbers.forEach(element => {
-        if (element % 2 === 0) {
-            sumEven += element;
+        const num = parseInt(element);
+        if (num % 2 === 0) {
+            sumEven += num;
         } else {
-            sumOdd += element;
+            sumOdd += num;
         }
     });
 
-    console.log("even", sumEven, "odd", sumOdd);
+    const verifyCode = Math.round(Math.abs(sumEven - sumOdd) / 2);
 
-    var verifyCode = 0;
-    if (sumEven > sumOdd) {
-        verifyCode = (sumEven - sumOdd) / 2;
-    } else {
-        verifyCode = (sumOdd - sumEven) / 2;
-    }
-
-    verifyCode = Math.round(verifyCode);
-
-    console.log("verifyCode", verifyCode);
-    return code === verifyCode;
+    return code === String(verifyCode).padStart(2, '0');
 };
 
 const saveFileProposals = (path, proposals) => {
-
     let countValid = 0;
     let countInvalid = 0;
 
     proposals.forEach(element => {
-        let verifyCode = "00" + element.produto.nrVersaoOferta
-        let proposal = element.propostaId + verifyCode.substring(verifyCode.length - 2);
+        const verifyCode = String(element.produto.nrVersaoOferta).padStart(2, '0');
+        const proposal = element.propostaId + verifyCode;
         if (validateProposalId(proposal)) {
             console.log("proposal:", proposal, "Valid");
             countValid++;
@@ -52,7 +37,7 @@ const saveFileProposals = (path, proposals) => {
             console.log("proposal:", proposal, "Invalid");
             countInvalid++;
         }
-    })
+    });
 
     fs.writeFileSync(path, JSON.stringify(proposals));
 
@@ -60,8 +45,8 @@ const saveFileProposals = (path, proposals) => {
     return {
         valid: countValid,
         invalid: countInvalid
-    }
-}
+    };
+};
 
 module.exports.validateProposalId = validateProposalId;
 module.exports.saveFileValidProposals = saveFileProposals;
